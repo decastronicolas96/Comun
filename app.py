@@ -271,10 +271,9 @@ if submitted:
             st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
             st.text("")
             st.text_area(
-                "Copiar texto (selecciona todo y copia):",
+                "📝 Texto Editable (copia esto para el chat con el cliente):",
                 value=explanation_text,
-                height=200,
-                label_visibility="collapsed",
+                height=150,
             )
         else:
             # Success — show explanation
@@ -282,8 +281,7 @@ if submitted:
             st.text("")
             # Copy-friendly version
             st.text_area(
-                "Copiar texto (selecciona todo y copia):",
+                "📝 Texto Editable (copia esto para el chat con el cliente):",
                 value=explanation_text,
-                height=200,
-                label_visibility="collapsed",
+                height=150,
             )

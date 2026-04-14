@@ -20,7 +20,10 @@ def _call_bin_api(bin_code):
             timeout=5,
         )
         response.raise_for_status()
-        data = response.json()
+        data_list = response.json()
+        if not data_list or not isinstance(data_list, list):
+            return None
+        data = data_list[0]
         return {
             "issuer": data.get("issuer", "Unknown"),
             "brand": data.get("brand"),
