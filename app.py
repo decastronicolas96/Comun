@@ -74,13 +74,8 @@ def init_supabase():
 
 # --- Helper: sanitize transaction for diagnostic display ---
 def sanitize_for_display(tx, bucket):
-    """Return a display-safe copy of the transaction. Hides fraud details."""
-    display = dict(tx)
-    if bucket == "SECURITY_REVIEW":
-        display["error_code"] = "Security Review"
-        display["risk_score"] = None
-        display["internal_note"] = None
-    return display
+    """(Deprecated) Previously hid data. Now returns raw transaction for full agent visibility."""
+    return tx.copy()
 
 
 def esc(value):
@@ -234,16 +229,17 @@ if submitted:
         # Error info (sanitized for fraud)
         if display_tx.get("error_code"):
             st.markdown("---")
-            st.markdown("**Información del error**")
+            
+            if resolution_category in ("security_review", "agent_escalation"):
+                st.error("🚨 **ALERTA INTERNA: REQUIERE ESCALAMIENTO**\n\nEsta transacción falló por motivos de riesgo o validación. No intentes resolver esto directamente con el usuario. Por favor envía la explicación generada al cliente y escala el caso internamente al equipo de Nivel 2.")
+            
+            st.markdown("### Información del error")
 
-            if bucket == "SECURITY_REVIEW":
-                st.markdown('<div class="security-badge">🔍 Security Review</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="metric-label">Código de error</div><div class="metric-value">{esc(display_tx.get("error_code"))}</div>', unsafe_allow_html=True)
-                if display_tx.get("internal_note"):
-                    st.markdown(f'<div class="metric-label">Nota interna</div><div class="metric-value">{esc(display_tx.get("internal_note"))}</div>', unsafe_allow_html=True)
-                if display_tx.get("risk_score") is not None:
-                    st.markdown(f'<div class="metric-label">Risk Score</div><div class="metric-value">{esc(display_tx.get("risk_score"))}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-label">Código de error</div><div class="metric-value">{esc(display_tx.get("error_code"))}</div>', unsafe_allow_html=True)
+            if display_tx.get("risk_score"):
+                st.markdown(f'<div class="metric-label">Score de riesgo interno</div><div class="metric-value">{esc(display_tx.get("risk_score"))}</div>', unsafe_allow_html=True)
+            if display_tx.get("internal_note"):
+                st.markdown(f'<div class="metric-label">Nota interna de BD</div><div class="metric-value" style="color: #666; font-style: italic;">{esc(display_tx.get("internal_note"))}</div>', unsafe_allow_html=True)
 
         # Resolution info
         resolution = RESOLUTION_PATHS.get(bucket, {})
