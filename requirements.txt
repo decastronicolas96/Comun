@@ -1,0 +1,6 @@
+pandas
+supabase
+streamlit
+anthropic
+google-generativeai
+requests
