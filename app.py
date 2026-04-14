@@ -18,7 +18,7 @@ from audit_logger import log_query
 
 # --- Page config ---
 st.set_page_config(
-    page_title="Smart Transaction Helper",
+    page_title="Asistente de Transacciones",
     page_icon="🏦",
     layout="wide",
 )
@@ -101,7 +101,7 @@ def get_status_class(status):
 
 
 # --- UI ---
-st.title("🏦 Smart Transaction Helper")
+st.title("🏦 Asistente de Transacciones")
 st.caption("Herramienta de diagnóstico para el equipo CX de Común")
 
 # Input form
