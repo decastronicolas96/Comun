@@ -16,7 +16,7 @@ def _call_bin_api(bin_code):
     try:
         response = requests.get(
             f"https://api.api-ninjas.com/v2/bin?bin={bin_code}",
-            headers={"X-Api-Key": st.secrets["BIN_API_KEY"]},
+            headers={"X-Api-Key": st.secrets["NINJA_API_KEY"]},
             timeout=5,
         )
         response.raise_for_status()
