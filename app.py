@@ -28,6 +28,7 @@ st.markdown("""
 <style>
     .explanation-box {
         background-color: #f0f7ff;
+        color: #333;
         padding: 1.5rem;
         border-radius: 8px;
         border-left: 4px solid #1a73e8;
