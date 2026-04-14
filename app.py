@@ -90,6 +90,16 @@ def esc(value):
     return html.escape(str(value))
 
 
+def format_explanation_html(text):
+    """Safely format LLM text for HTML rendering, preserving bold and newlines."""
+    if not text:
+        return ""
+    safe = esc(text)
+    safe = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', safe)
+    safe = safe.replace('\n', '<br>')
+    return safe
+
+
 def get_status_class(status):
     """Return CSS class for status coloring."""
     return f"status-{status.lower()}" if status else ""
@@ -259,10 +269,10 @@ if submitted:
             # Judge failed or flagged
             st.warning("⚠️ La explicación generada requiere revisión manual.")
             with st.expander("Ver explicación generada (no validada)", expanded=False):
-                st.markdown(f'<div class="explanation-box">{esc(explanation_text)}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
         else:
             # Success — show explanation
-            st.markdown(f'<div class="explanation-box">{esc(explanation_text)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
             st.text("")
             # Copy-friendly version
             st.text_area(
