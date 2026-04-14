@@ -126,8 +126,8 @@ if submitted:
         st.error("Por favor ingresa un Transaction ID.")
         st.stop()
 
-    if not re.match(r"^TX-[A-Za-z0-9]+$", tx_id):
-        st.error("Formato inválido. El ID debe comenzar con TX- seguido de caracteres alfanuméricos.")
+    if not re.match(r"^TX-[A-Za-z0-9\-]+$", tx_id):
+        st.error("Formato inválido. El ID debe comenzar con TX- seguido de caracteres alfanuméricos (guiones permitidos).")
         st.stop()
 
     # --- Query Supabase ---
