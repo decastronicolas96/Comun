@@ -117,7 +117,7 @@ def _call_gemini_judge(explanation, tx, bucket):
     """Call Gemini Flash to validate the generated explanation. Returns (passed, result_json_str)."""
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
         prompt = JUDGE_PROMPT_TEMPLATE.format(
             explanation=explanation,
@@ -150,6 +150,41 @@ def _call_gemini_judge(explanation, tx, bucket):
         return False, "judge_error"
 
 
+def _call_haiku_judge(explanation, tx, bucket):
+    """Fallback judge using Claude 3.5 Haiku when Gemini fails."""
+    try:
+        client = anthropic.Anthropic(
+            api_key=st.secrets["ANTHROPIC_API_KEY"],
+            timeout=15.0,
+        )
+        prompt = JUDGE_PROMPT_TEMPLATE.format(
+            explanation=explanation,
+            error_code=tx.get("error_code", "N/A"),
+            bucket=bucket,
+        )
+        response = client.messages.create(
+            model="claude-3-5-haiku-20241022",
+            max_tokens=300,
+            temperature=0,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        
+        response_text = response.content[0].text.strip()
+        code_block_match = re.search(r"```(?:json)?\s*(.*?)\s*```", response_text, re.DOTALL)
+        if code_block_match:
+            response_text = code_block_match.group(1).strip()
+        else:
+            json_match = re.search(r"\{.*\}", response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0).strip()
+
+        result = json.loads(response_text)
+        return result.get("passed", False), json.dumps(result, ensure_ascii=False)
+    except Exception as e:
+        logger.warning(f"Haiku judge fallback failed: {e}")
+        return False, "judge_error"
+
+
 def generate_explanation(tx, bucket, resolution_category, bin_data):
     """Generate a customer explanation using Claude + Gemini judge.
 
@@ -177,6 +212,11 @@ def generate_explanation(tx, bucket, resolution_category, bin_data):
 
     # Call Gemini Flash judge
     judge_passed, judge_result = _call_gemini_judge(raw_response, tx, bucket)
+
+    # Fallback to Haiku if Gemini fails
+    if judge_result == "judge_error":
+        logger.info("Gemini judge failed, falling back to Haiku")
+        judge_passed, judge_result = _call_haiku_judge(raw_response, tx, bucket)
 
     return {
         "explanation": raw_response,
