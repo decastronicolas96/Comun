@@ -267,9 +267,15 @@ if submitted:
             st.warning("⚠️ Explicación automática no disponible. Usa la información de diagnóstico para responder al cliente.")
         elif judge_passed is False and not is_template:
             # Judge failed or flagged
-            st.warning("⚠️ La explicación generada requiere revisión manual.")
-            with st.expander("Ver explicación generada (no validada)", expanded=False):
-                st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
+            st.info("💡 Esta explicación incluye análisis de IA. Te sugerimos validarla brevemente con el panel de diagnóstico antes de enviarla.")
+            st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
+            st.text("")
+            st.text_area(
+                "Copiar texto (selecciona todo y copia):",
+                value=explanation_text,
+                height=200,
+                label_visibility="collapsed",
+            )
         else:
             # Success — show explanation
             st.markdown(f'<div class="explanation-box">{format_explanation_html(explanation_text)}</div>', unsafe_allow_html=True)
@@ -281,8 +287,3 @@ if submitted:
                 height=200,
                 label_visibility="collapsed",
             )
-
-        # Judge details (collapsed by default)
-        if not is_template and judge_result and judge_result not in ("template_bypass",):
-            with st.expander("🔍 Detalles de validación"):
-                st.json(judge_result if isinstance(judge_result, dict) else {"result": judge_result})
