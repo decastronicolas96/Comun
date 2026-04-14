@@ -23,7 +23,7 @@ __pycache__/
 ```toml
 SUPABASE_URL = "https://vxbujnfgyvfnedphidxc.supabase.co"
 SUPABASE_KEY = "your_service_role_secret_key"
-BIN_API_KEY = "your_api_ninjas_key"
+NINJA_API_KEY = "your_api_ninjas_key"
 ANTHROPIC_API_KEY = "your_anthropic_key"
 GEMINI_API_KEY = "your_gemini_key"
 ```
@@ -188,7 +188,7 @@ The prompt must:
 - R03 → "Equipo revisando el caso" / 1-2 business days
 - SECURITY_REVIEW → "Transacción bajo revisión" / 24-48 hours
 
-### Judge LLM: Gemini Flash
+### Judge LLM: Gemini 2.5 Flash / Claude 3.5 Haiku Fallback
 Runs AFTER primary generation. Binary checks:
 1. No risk score numbers in output?
 2. No fraud codes (FRD_VEL, FRD_GEO, RISK_BLOCK) in output?
@@ -198,7 +198,7 @@ Runs AFTER primary generation. Binary checks:
 6. Template sections present (what happened, next step, timeframe)?
 7. Tone is empathetic and non-technical?
 
-If ANY check fails → flag the explanation. Show agent: "La explicación generada requiere revisión manual."
+If ANY check fails → flag the explanation. Show agent: "💡 Esta explicación incluye análisis de IA. Te sugerimos validarla brevemente con el panel de diagnóstico antes de enviarla." and provide them the explanation natively in the text box.
 
 ---
 
@@ -230,7 +230,7 @@ Shows for external card transactions (bin is not null):
 
 ### Fallback states:
 - LLM fails → diagnostic panel shows normally, explanation area shows: "Explicación automática no disponible. Usa la información de diagnóstico para responder al cliente."
-- Judge fails validation → diagnostic panel shows normally, explanation area shows: "La explicación generada requiere revisión manual."
+- Judge fails validation → The text is not redacted. Instead, an `st.info` banner appears advising the agent to manually review the explanation ("💡 Esta explicación incluye análisis de IA...").
 - Invalid TX ID → error message, no panels shown
 
 ---
@@ -290,16 +290,14 @@ For template-routed transactions (Completed/Pending), log with prompt_sent=None 
 
 ## PART 9: AGENT VISIBILITY RULES — CRITICAL
 
-This is the most important security rule in the app:
-
 **For fraud/security error codes (FRD_VEL, FRD_GEO, RISK_BLOCK):**
-- Agent sees error category as "Security Review" — NOT the raw code
-- Agent does NOT see risk_score
-- Agent does NOT see internal_note
-- The diagnostic panel actively hides these fields for security cases
+- Diagnostics are FULLY UNMASKED. The agent sees the raw error code, risk_score, and internal_note natively.
+- A prominent UI banner (`🚨 ALERTA INTERNA: REQUIERE ESCALAMIENTO`) is automatically injected into the diagnostic panel.
+- Agents are explicitly guided to use the AI-generated text but ultimately escalate the ticket to Level 2 fraud without overriding it manually.
 
 **For all other error codes:**
 - Agent sees everything: raw error code, internal note, risk score, all transaction details
+- No escalation banners are shown unless explicitly mapped in the bucket routing logic.
 
 Implement this as a sanitization step BEFORE rendering the diagnostic panel, not as a CSS/display trick.
 

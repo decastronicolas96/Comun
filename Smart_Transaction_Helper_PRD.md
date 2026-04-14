@@ -100,7 +100,7 @@ The error code is the primary driver of the customer explanation, not the transa
 
 For **non-fraud error codes** (CARD_LOCK, INSUFFICIENT_FUNDS, EXPIRED_CARD, CVV_MISMATCH, 3DS_FAILED, NETWORK_TIMEOUT, R01, R03, INV_ACC): agents see the raw error code, internal note, and all transaction details. Full transparency — this is their diagnostic source.
 
-For **fraud/security cases** (FRD_VEL, FRD_GEO, RISK_BLOCK): agents see only "Security Review" as the error category. They do not see raw risk scores, fraud model codes, or internal notes referencing model thresholds. Rationale: prevents knowledge leakage about the risk engine, and agents cannot override the fraud team's process.
+For **fraud/security cases** (FRD_VEL, FRD_GEO, RISK_BLOCK): agents now see FULLY UNMASKED diagnostics including raw risk scores, fraud model codes, and internal notes. Instead of blinding the agent, the diagnostic panel injects a prominent `🚨 ALERTA INTERNA: REQUIERE ESCALAMIENTO` banner that forces them to follow Level 2 fraud routing. The LLM still safely protects the customer-facing text, maintaining our security boundary.
 
 The agent uses the diagnostic panel as a citation source — they compare the raw data against the AI-generated explanation before communicating it. This is the same verification pattern as a human reviewing RAG output against source documents.
 
@@ -143,7 +143,7 @@ The structured bucket approach means the LLM is not doing open-ended interpretat
 
 ### 9.1 Output Validation (LLM-as-Judge)
 
-A fast, cheap LLM (e.g., Claude Haiku or GPT-4o-mini) runs as a validation layer between the primary LLM's output and what the agent sees. It checks every generated explanation against a set of binary rules before the response is displayed:
+A fast, cheap LLM (e.g., Gemini 2.5 Flash, supported by a secondary Claude 3.5 Haiku fallback) runs as a validation layer between the primary LLM's output and what the agent sees. It checks every generated explanation against a set of binary rules before the response is displayed:
 
 - **No risk score leakage.** Does the explanation contain any numeric risk values or references to scoring?
 - **No fraud code leakage.** Does the explanation mention FRD_VEL, FRD_GEO, RISK_BLOCK, or any variation of fraud detection terminology?
@@ -153,9 +153,9 @@ A fast, cheap LLM (e.g., Claude Haiku or GPT-4o-mini) runs as a validation layer
 - **Template completeness.** Does the output include the required sections for its bucket (what happened, money safety, next step, timeframe)?
 - **Tone check.** Is the tone empathetic and non-technical? No jargon, no blame.
 
-If any check fails, the judge flags the explanation. The agent sees the diagnostic panel normally but the AI explanation is replaced with a warning: "La explicación generada requiere revisión manual." The agent can still compose their own response using the diagnostic data. This ensures the tool never degrades the customer experience — worst case, it falls back to the pre-tool workflow.
+If any check fails, the judge flags the explanation. The agent sees the diagnostic panel normally but the AI explanation is preceded with a soft warning: "💡 Esta explicación incluye análisis de IA. Te sugerimos validarla brevemente con el panel de diagnóstico antes de enviarla." The agent can still compose their own response using the diagnostic data, but the json outputs are stripped to minimize confusion. This ensures the tool never degrades the customer experience — worst case, it falls back to the pre-tool workflow.
 
-The judge adds minimal latency (~200-400ms) and costs a fraction of the primary generation call. It can be run in parallel with the response streaming to minimize perceived delay.
+The judge adds minimal latency (~300-500ms) and costs a fraction of the primary generation call. The Haiku fallback protects the system against downstream API errors.
 
 ### 9.2 Deterministic Override for Simple Cases
 
