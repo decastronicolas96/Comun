@@ -101,16 +101,27 @@ pacho/
 ├── README.md                    # Qué es Pacho, para uso de Silvana
 ├── .claude/
 │   ├── settings.json            # Permisos, hooks, variables
-│   ├── commands/                # Comandos propios (ej: /resumen-dia, /inbox)
+│   ├── commands/                # Comandos propios (ej: /resumen-dia, /inbox,
+│   │                            #   /memoria-mantenimiento)
 │   ├── agents/                  # Subagentes especializados (opcional)
 │   └── skills/                  # Habilidades reutilizables (opcional)
-├── memoria/
-│   ├── perfil.md                # Quién es Silvana, contexto fijo, preferencias
-│   ├── personas.md              # Contactos clave y cómo tratarlos
-│   ├── proyectos.md             # Proyectos/temas activos
-│   └── bitacora/                # Notas con fecha de lo que Pacho va haciendo
+├── memoria/                     # Memoria en 3 capas (ver doc 03)
+│   ├── perfil.md                # Capa 3 — identidad y contexto fijo de Silvana
+│   ├── preferencias.md          # Capa 2 — reglas de comportamiento aprendidas
+│   ├── personas.md              # Capa 2 — contactos clave (un bloque por persona)
+│   ├── proyectos.md             # Capa 2 — proyectos/temas activos
+│   ├── indice.md                # Mapa de qué hay en cada archivo
+│   ├── bitacora/                # Capa 1 — log diario (append-only)
+│   └── archivo/                 # Lo cerrado/obsoleto que se guarda pero no estorba
 └── plantillas/                  # Plantillas de correos, mensajes, documentos
 ```
+
+> 🧠 **La memoria es el corazón de Pacho.** Cómo se construye, se organiza por
+> capas y —sobre todo— cómo Pacho la **consolida, depura y poda** semanalmente
+> para que mejore con el tiempo (en vez de acumular ruido) está en su propio
+> documento: [`03_Memoria_y_Mantenimiento.md`](03_Memoria_y_Mantenimiento.md).
+> El `.claude/commands/` incluye `/memoria-mantenimiento` para ejecutar ese
+> proceso, y se programa como rutina semanal (§9).
 
 > `CLAUDE.md`, `.claude/` y `.mcp.json` se cargan automáticamente en cada sesión
 > en la nube porque son parte del clon del repo. Lo que esté **solo** en la
@@ -149,14 +160,24 @@ notas y seguimiento de pendientes.
   **preguntas una sola cosa, concreta.** No mandas cuestionarios.
 - Cuando termines algo, di en una línea **qué hiciste y dónde quedó.**
 
-## Memoria
-- Tu memoria viva está en `memoria/`. Antes de trabajar, lee `memoria/perfil.md`
-  y lo relevante de `memoria/proyectos.md`.
-- Cuando aprendas algo estable sobre Silvana, sus preferencias o sus contactos,
-  **actualízalo en el archivo correspondiente y haz commit.** Esa es tu manera
-  de "recordar" entre sesiones.
-- Deja una nota corta en `memoria/bitacora/AAAA-MM-DD.md` de lo que hiciste,
-  para tener trazabilidad.
+## Memoria (tu repo ES tu memoria — protocolo completo en doc 03)
+Recuerdas entre sesiones solo porque escribes en `memoria/` y haces commit.
+Tu memoria tiene tres capas: **bitácora** (cruda, diaria) → **temáticos**
+(personas/proyectos/preferencias, curados) → **perfil** (identidad estable).
+
+- **Al empezar:** lee siempre `memoria/perfil.md` y `memoria/preferencias.md`.
+  Según la tarea, lee solo el bloque relevante de `personas.md`/`proyectos.md`
+  (guíate con `memoria/indice.md`). No cargues todo.
+- **Mientras trabajas:** lo que vayas a necesitar en otra sesión, escríbelo en su
+  archivo temático en el formato de ese archivo. Si un dato nuevo contradice uno
+  viejo, **reemplázalo** (no acumules ambos). Toda acción o aprendizaje relevante
+  va como una línea en `memoria/bitacora/AAAA-MM-DD.md`.
+- **Regla de captura:** ante la duda, a la bitácora. La consolidación decide
+  después qué sube a los archivos curados.
+- **Al cerrar:** haz **commit** de los cambios de `memoria/`. Sin commit, se pierde.
+- **Mantenimiento semanal:** corre `/memoria-mantenimiento` (consolidar, deduplicar,
+  resolver conflictos, podar/archivar, reorganizar, resumir, reindexar). Esto es
+  lo que mantiene tu memoria chica, vigente y útil. Detalle en el doc 03.
 
 ## Límites
 - No tomas decisiones de plata, legales o médicas por ella: le das opciones.
@@ -268,9 +289,12 @@ Ejemplos de rutinas según lo que responda Silvana:
 | **Cierre del día** | Cada día 6:00 p.m. | Lista pendientes que quedaron, prepara borradores de respuesta y reprograma lo no hecho. |
 | **Inbox zero** | Cada par de horas | Clasifica correos nuevos, archiva ruido, deja borradores para los que necesitan respuesta. |
 | **Pre-reunión** | 30 min antes de cada reunión | Junta contexto (correos, notas, agenda) y se lo pasa lista a Silvana. |
+| **Mantenimiento de memoria** | Semanal (ej. domingo 9:00 p.m.) | Corre `/memoria-mantenimiento`: consolida la bitácora, depura, poda y reorganiza la memoria. Es lo que hace que Pacho mejore con el tiempo (ver doc 03). |
 
 > Empezar con **una sola rutina** (el resumen de la mañana suele ser la de mayor
-> impacto), validar que el resultado le sirve, y recién ahí sumar más.
+> impacto), validar que el resultado le sirve, y recién ahí sumar más. La de
+> **mantenimiento de memoria** conviene activarla temprano: es barata y evita que
+> la memoria se ensucie desde el día uno.
 
 ---
 
@@ -295,10 +319,13 @@ Ejemplos de rutinas según lo que responda Silvana:
 - [ ] **GitHub App de Claude** autorizada.
 - [ ] Repo privado **`pacho`** creado con la estructura de §5.
 - [ ] `CLAUDE.md` de Pacho escrito (personalidad eficiente/pragmática) y commiteado.
+- [ ] Estructura `memoria/` creada con el protocolo de 3 capas (doc 03).
 - [ ] `memoria/perfil.md` lleno con el contexto de Silvana.
+- [ ] Comando `/memoria-mantenimiento` creado en `.claude/commands/`.
 - [ ] Conectores necesarios activados en **claude.ai/customize/connectors**.
 - [ ] Probado con 1 tarea real; tono ajustado.
 - [ ] Primera rutina (resumen de la mañana) programada.
+- [ ] Rutina semanal de **mantenimiento de memoria** programada.
 - [ ] App de Claude instalada en el celular de Silvana (opcional).
 
 ---
@@ -322,6 +349,7 @@ Ejemplos de rutinas según lo que responda Silvana:
 
 ## 13. Referencias
 
+- **Memoria y mantenimiento de Pacho:** [`03_Memoria_y_Mantenimiento.md`](03_Memoria_y_Mantenimiento.md)
 - Claude Code en la web: https://code.claude.com/docs/en/claude-code-on-the-web
 - Conectar herramientas (MCP): https://code.claude.com/docs/en/mcp
 - Connectors de Claude.ai: https://claude.ai/customize/connectors

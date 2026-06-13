@@ -13,6 +13,7 @@ Este folder contiene todo lo necesario para montarlo.
 | :------ | :------------- |
 | [`01_Requerimientos_Setup_Pacho.md`](01_Requerimientos_Setup_Pacho.md) | Documento de requerimientos: cuentas, pasos exactos de instalación, estructura del repositorio, plantilla de personalidad y checklist de verificación. |
 | [`02_Preguntas_para_Silvana.md`](02_Preguntas_para_Silvana.md) | Cuestionario para Silvana. Sus respuestas definen qué herramientas conectar, qué rutinas automatizar y cómo debe comportarse Pacho. **Responder esto antes de hacer el setup final.** |
+| [`03_Memoria_y_Mantenimiento.md`](03_Memoria_y_Mantenimiento.md) | El corazón de Pacho: cómo construye su memoria por capas en el file system y cómo la **consolida, depura y poda** semanalmente para mejorar con el tiempo en vez de acumular ruido. |
 
 ## Orden recomendado
 
